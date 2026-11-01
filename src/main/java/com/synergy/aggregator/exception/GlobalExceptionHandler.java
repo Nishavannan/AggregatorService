@@ -18,8 +18,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
+
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(Exception ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(SupplierServiceException.class)
+
+    public ResponseEntity<ErrorResponse> handleSupplierServiceException(Exception ex){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse(ex.getMessage()));
     }
 }
