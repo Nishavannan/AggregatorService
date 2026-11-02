@@ -33,13 +33,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponseDto> getAllProducts() {
-        try{
+        try {
             SupplierProductDto[] supplierResponse = restClient.get()
                     .uri("/objects")
                     .retrieve()
-                    .body(SupplierProductDto[].class);
+                    .body(SupplierProductDto[].class); //Used to specify convert json to supplier obj type
 
-            if(supplierResponse == null || supplierResponse.length == 0){
+            if (supplierResponse == null || supplierResponse.length == 0) {
                 throw new ProductNotFoundException("No products found");
             }
             return Arrays.stream(supplierResponse)
@@ -49,15 +49,13 @@ public class ProductServiceImpl implements ProductService {
             log.error("Error No Products found");
             throw new ProductNotFoundException("No products found");
 
-        } catch (HttpClientErrorException.BadRequest ex){
+        } catch (HttpClientErrorException.BadRequest ex) {
             log.error("Invalid request while fetching products", ex);
-            throw new MethodArgumentNotValidException("Invalid request. " + ex.getResponseBodyAsString());
-        }catch (HttpServerErrorException ex){
+            throw new MethodArgumentNotValidException("Invalid request. " + ex);
+        } catch (HttpServerErrorException ex) {
             log.error("Error accessing supplier server while fetching products", ex);
-            throw  new SupplierServiceException("Error processing request. Please try after some time.");
-        }
-        catch (RestClientException ex) {
-
+            throw new SupplierServiceException("Error processing request. Please try after some time.");
+        } catch (RestClientException ex) {
             log.error("Error connecting to supplier service ", ex);
             throw new SupplierServiceException("Error processing request. Please try after some time.");
         }
@@ -65,6 +63,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDto getProductById(String id) {
+        if (id == null || id.isBlank()) {
+            log.warn("Error -- ID is null");
+            throw new MethodArgumentNotValidException("ID should not be null");
+        }
         try {
             SupplierProductDto supplierResponse = restClient.get()
                     .uri("/objects/{id}", id)
@@ -74,20 +76,16 @@ public class ProductServiceImpl implements ProductService {
         } catch (HttpClientErrorException.NotFound ex) {
             log.error("Error Product Not Found With ID: {}", id, ex);
             throw new ProductNotFoundException("No product found with ID:" + id);
-
-        } catch (HttpClientErrorException.BadRequest ex){
-            log.error("Invalid request With ID: {}", id, ex);
-            throw new MethodArgumentNotValidException("Invalid request" + ex.getResponseBodyAsString());
-        }catch (HttpServerErrorException ex){
+        } catch (HttpClientErrorException.BadRequest ex) {
+            log.warn("Invalid request With ID: {}", id, ex);
+            throw new MethodArgumentNotValidException("Invalid request" + ex);
+        } catch (HttpServerErrorException ex) {
             log.error("Error accessing supplier server");
-            throw  new SupplierServiceException("Error processing request. Please try after some time.");
-        }
-        catch (RestClientException ex) {
-
+            throw new SupplierServiceException("Error processing request. Please try after some time.");
+        } catch (RestClientException ex) {
             log.error("Error connecting to supplier service for ID {}", id, ex);
             throw new SupplierServiceException("Unable to fetch product from supplier service");
         }
-
     }
 
     @Override
@@ -99,22 +97,19 @@ public class ProductServiceImpl implements ProductService {
                     .retrieve()
                     .body(SupplierProductDto.class);
 
-            if(supplierResponse == null){
+            if (supplierResponse == null) {
                 throw new SupplierServiceException("Unable to create product. Empty response received.");
             }
 
             return productMapper.toProductResponse(supplierResponse);
-        }catch (HttpClientErrorException ex){
+        } catch (HttpClientErrorException ex) {
             log.error("Invalid request while creating product", ex);
 
-            throw new MethodArgumentNotValidException("Invalid request. "+ ex.getResponseBodyAsString());
-        }
-        catch (HttpServerErrorException ex){
+            throw new MethodArgumentNotValidException("Invalid request. " + ex.getResponseBodyAsString());
+        } catch (HttpServerErrorException ex) {
             log.error("Supplier service error while creating product", ex);
-            throw  new SupplierServiceException("Error processing request. Please try after some time.");
-        }
-
-        catch (RestClientException ex){
+            throw new SupplierServiceException("Error processing request. Please try after some time.");
+        } catch (RestClientException ex) {
             log.error("Error connecting to supplier service", ex);
             throw new SupplierServiceException("Error processing request. Please try after some time.");
         }

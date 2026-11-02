@@ -17,6 +17,14 @@ public class RestClientConfig {
     }
 }
 
+
+
+
+
+
+
+
+
  /*  SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(100);
         factory.setReadTimeout(100);*/
